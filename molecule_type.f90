@@ -8,9 +8,7 @@ module molecule_type
         integer , public :: nb_atoms
     contains
         procedure :: init_mol, add_atom, box, dist, test_valid, print_mol, write, read, print_mol2
-    
-        ! allow calls like print *
-        !generic :: write(formatted) => print_mol
+
     
         end type molecule
     
@@ -147,17 +145,15 @@ module molecule_type
             enddo 
         end subroutine
     
-        subroutine read(m)
+        subroutine read(m, filename)
             class(molecule), intent(inout) :: m
-            character(len=100) :: fileName
+            character(len=100), intent(in) :: fileName
             character(len=100):: ligne
             character(len=3) :: element
             integer :: i, nb_atoms, ok
             type(atom) :: a
             real, dimension(3) :: coord
            
-            ! Open File provided
-            call getarg(1,fileName)
             print '(/,a,a)', "File to read = ",trim(fileName)
             open(unit=10,file=fileName,iostat=ok,status='old')
             if(ok/=0) then
@@ -165,7 +161,6 @@ module molecule_type
              stop 20
             end if
 
-    
             ! Lire nombre d'atomes du ligand
             read(10, '(a)', iostat=ok) ligne
             read(ligne(1:5),'(i4)') nb_atoms
@@ -173,7 +168,7 @@ module molecule_type
             allocate(m%atoms(nb_atoms))
             ! Ligand fourni en entrée ?
             read(10, '(a)', iostat=ok) ligne
-            print *, "AVA2"
+            
             ! Read the content
             do i=1, nb_atoms
                 !print '(i1)', i
@@ -195,9 +190,6 @@ module molecule_type
             character(len=100), intent(in) :: fileName
             integer :: i, ok
             type(atom) :: a
-    
-
-
             
             ! Open File provided
             print '(/,a,a)', "File to write = ",trim(fileName)

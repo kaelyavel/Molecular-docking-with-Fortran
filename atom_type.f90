@@ -4,10 +4,9 @@ module atom_type
        character(len=2), public :: element
        real, dimension(3), public :: coordinates
      contains
-       procedure :: print_atom, init_atom
+       procedure :: print_atom, init_atom, print_atom2
   
-       ! allow calls like print * instead of call print_atom
-       !generic :: write(formatted) => print_atom
+      
   
     end type atom
   
@@ -36,4 +35,12 @@ module atom_type
       write(unit=unit, fmt='(a2,3f8.3/)', iostat=iostat, iomsg=iomsg) trim(a%element),a%coordinates
   
     end subroutine print_atom
+
+    subroutine print_atom2(a)
+      class (atom),intent(inout) :: a
+
+      print '(3f9.5)', a%coordinates(1), a%coordinates(2), a%coordinates(3)
+
+    end subroutine print_atom2
+    
   end module atom_type
