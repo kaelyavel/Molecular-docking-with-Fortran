@@ -1,0 +1,2 @@
+TO COMPILE : gfortran .\vdw_type.f90 .\atom_type.f90 .\molecule_type.f90 .\main.f90 -o main
+TO RUN : ./main .\rayons.vdw .\ligand.xyz .\molecule.xyz
