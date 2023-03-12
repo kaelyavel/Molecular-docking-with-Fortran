@@ -32,6 +32,7 @@ module molecule_type
     
 
         ! function that reads an .xyz file defining a molecule
+        
         subroutine read(m, fileName)
             class(molecule), intent(inout) :: m
             character(len=100), intent(in) :: filename
@@ -43,7 +44,7 @@ module molecule_type
             real, dimension(3) :: coord
 
            
-            print '(/,a,a)', "File to read = ", trim(fileName)
+            print '(/,a,a)', "XYZ file to read = ", trim(fileName)
             
             
             open(unit=10,file=fileName,iostat=ok,status='old')
