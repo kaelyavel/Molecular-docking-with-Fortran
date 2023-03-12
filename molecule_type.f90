@@ -34,7 +34,7 @@ module molecule_type
         subroutine box(m, ligand, volume)
             class(molecule), intent(inout) :: m
             type(molecule), intent(in) :: ligand
-            real, intent(out) :: volume
+            real, intent(inout) :: volume
     
             type(atom) :: a, a1
             integer :: i

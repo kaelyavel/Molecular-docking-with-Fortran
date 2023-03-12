@@ -50,7 +50,7 @@ module vdw_type
             ! Skip first 6 lines
             do i=1, 5
                 read(10,'(a80)') line
-                print '(a)',line
+                !print '(a)',line
             enddo
 
             ! Read the content
@@ -65,7 +65,7 @@ module vdw_type
             enddo
 
             do i=1, 52
-                print '(a,x,f4.2)',  vdw_atom_arrays(i)%atom_name, vdw_atom_arrays(i)%radius
+                !print '(a,x,f4.2)',  vdw_atom_arrays(i)%atom_name, vdw_atom_arrays(i)%radius
             enddo
             
             

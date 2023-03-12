@@ -15,11 +15,15 @@ program main
 
     type(atomvdw), dimension(53) :: vdw_array
 
+    type(molecule), dimension(10) :: tab_ligand
+
     character(100) :: fileName
 
-    integer :: i, j
+    integer :: i, j, n
 
-    real :: x1, x2, y1, y2, z1, z2,d
+    real :: x1, x2, y1, y2, z1, z2, d, r1, r2, volume
+
+    logical :: inside = .false.
 
     !type(atomvdw), dimension(52):: vdw_array
 
@@ -41,9 +45,6 @@ program main
     !call atomvd%get_atom_radius("H ", vdw_array, radinser)
 
 
-    !print '(f4.2)', radinser
-
-
     call getarg(1,fileName)
 
     call readvdw%read_vdw_file(fileName, vdw_array)
@@ -52,7 +53,6 @@ program main
 
     call ligand%read(fileName)
 
-    
 
     call getarg(3,fileName)
 
@@ -60,8 +60,9 @@ program main
 
     
     call molecula%set_radius(vdw_array)
+    call ligand%set_radius(vdw_array) 
 
-    print'(f4.2)', molecula%atoms(1)%radius
+    !print'(f4.2)', molecula%atoms(1)%radius
 
 
     !call molecula%print_mol2()
@@ -92,25 +93,75 @@ program main
     !     !print '(a2)', molecula%atoms(j)%element
     ! enddo
 
-    ! do i=1, ligand%nb_atoms
+    do i=1, ligand%nb_atoms
 
-    !     x1 = molecula%atoms(i)%coordinates(1)
-    !     y1 = molecula%atoms(i)%coordinates(2)
-    !     z1 = molecula%atoms(i)%coordinates(3)
+        x1 = molecula%atoms(i)%coordinates(1)
+        y1 = molecula%atoms(i)%coordinates(2)
+        z1 = molecula%atoms(i)%coordinates(3)
         
-    !     do j=1, molecula%nb_atoms
+        do j=1, molecula%nb_atoms
             
           
-    !         x2 = ligand%atoms(j)%coordinates(1)
-    !         y2 = ligand%atoms(j)%coordinates(2)
-    !         z2 = ligand%atoms(j)%coordinates(3)
+            x2 = ligand%atoms(j)%coordinates(1)
+            y2 = ligand%atoms(j)%coordinates(2)
+            z2 = ligand%atoms(j)%coordinates(3)
 
-    !         d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+            d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+            r1 = molecula%atoms(i)%radius
+            r2 = ligand%atoms(j)%radius
 
-    !         print '(f9.5)', d
-    !         !print '(i4, i4)', i, j
-    !     enddo
-    ! enddo
+            if(d <= r1 + r2) then
+                inside = .true.
+            endif
+
+            !print '(f9.5)', d
+            !print '(i4, i4)', i, j
+        enddo
+    enddo
+    
+    if(inside .eqv. .false.) then
+        print *,"Le ligand est accepte"
+    else
+        print *,"Le ligand est rejete"
+    endif
+
+
+    call molecula%box(ligand,volume)
+
+    !print *, volume
+
+    inside = .false.
+    do n=1, 10
+        do i=1, tab_ligand(n)%nb_atoms
+
+            x1 = molecula%atoms(i)%coordinates(1)
+            y1 = molecula%atoms(i)%coordinates(2)
+            z1 = molecula%atoms(i)%coordinates(3)
+            
+            do j=1, molecula%nb_atoms
+                
+              
+                x2 = tab_ligand(n)%atoms(j)%coordinates(1)
+                y2 = tab_ligand(n)%atoms(j)%coordinates(2)
+                z2 = tab_ligand(n)%atoms(j)%coordinates(3)
+    
+                d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+                r1 = molecula%atoms(i)%radius
+                r2 = tab_ligand(n)%atoms(j)%radius
+    
+                if(d <= r1 + r2) then
+                    inside = .true.
+                endif
+            enddo
+        enddo
+        if(inside .eqv. .true.) then
+            if(n == 1) then
+                tab_ligand = tab_ligand(2:)
+            else 
+                tab_ligand = [tab_ligand(1:n-1), tab_ligand(n+1:10)]
+            endif
+        endif    
+    enddo
 
 
     deallocate(molecula%atoms)
