@@ -13,11 +13,13 @@ module molecule_type
         end type molecule
     
     contains
-        subroutine init_mol(m, size)
+        subroutine init_mol(m, nb_atoms)
             class (molecule),intent(inout) :: m
-            integer, intent(in) :: size
+            integer, intent(in) :: nb_atoms
+            integer :: ok
+        
     
-            allocate(m%atoms(size))
+            allocate(m%atoms(nb_atoms), stat=ok)
     
             m%nb_atoms=0
         end subroutine init_mol
@@ -170,6 +172,7 @@ module molecule_type
             ! Lire nombre d'atomes du ligand
             read(10, '(a)', iostat=ok) ligne
             read(ligne(1:5),'(i4)') nb_atoms
+            
             m%nb_atoms = nb_atoms
             allocate(m%atoms(nb_atoms))
             ! Ligand fourni en entrée ?

@@ -11,37 +11,24 @@ program main
 
     type(molecule) :: ligand
 
+    type(molecule), dimension(10) :: ligand_random
+
     type(atomvdw) :: readvdw
 
     type(atomvdw), dimension(53) :: vdw_array
 
+    type(atom) :: temp
+
     character(100) :: fileName
 
-    integer :: i, j
+    integer :: i, j, ok, nbligandrandom
 
-    real :: x1, x2, y1, y2, z1, z2,d
+    real :: x1, x2, y1, y2, z1, z2,d, teta, xx, yy, zz, xt, yt, zt
 
-    !type(atomvdw), dimension(52):: vdw_array
-
-    !character(len=2):: na
-    !integer :: i
-    !real :: rad, radinser
-
-    !na = "H "
-    !rad = 2.5
-
-    !call atomvd%init_vdw(na, rad)
-
-    !print '(f4.2)',atomvd%radius
-    
-    !call atomvd%read_vdw_file(vdw_array)
-
-    !print '(f4.2)', vdw_array(1)%radius
-
-    !call atomvd%get_atom_radius("H ", vdw_array, radinser)
+    real :: deltax, deltay, deltaz
 
 
-    !print '(f4.2)', radinser
+    nbligandrandom = 10
 
 
     call getarg(1,fileName)
@@ -50,67 +37,67 @@ program main
 
     call getarg(2,fileName)
 
-    call ligand%read(fileName)
-
-    
+    call ligand%read(fileName)    
 
     call getarg(3,fileName)
 
     call molecula%read(fileName)
 
-    
     call molecula%set_radius(vdw_array)
 
     print'(f4.2)', molecula%atoms(1)%radius
 
+    teta = 1
 
-    !call molecula%print_mol2()
+    !borne max
+    ! 10
 
-    !call ligand%print_mol2()
+    deltax = 0.1
+    deltay = 0.25
+    deltaz = 0.75
+
+    do i=1, nbligandrandom
+        do j = 1, ligand%nb_atoms
+
+            xt = ligand%atoms(j)%coordinates(1) + deltax*j
+            yt = ligand%atoms(j)%coordinates(2) + deltay*i
+            zt = ligand%atoms(j)%coordinates(3) + deltaz*(j/i)
 
 
-
-    ! x1 = molecula%atoms(1)%coordinates(1)
-    ! y1 = molecula%atoms(1)%coordinates(2)
-    ! z1 = molecula%atoms(1)%coordinates(3)
-  
-    ! x2 = ligand%atoms(1)%coordinates(1)
-    ! y2 = ligand%atoms(1)%coordinates(2)
-    ! z2 = ligand%atoms(1)%coordinates(3)
-
-    !call molecula%atoms(1)%print_atom2()
-    !call ligand%atoms(1)%print_atom2()
-    
-    !d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
-
-    !print '(f9.5)', d
-    ! print '(i4)', ligand%nb_atoms
-    ! print '(i4)', molecula%nb_atoms
-
-    ! do j=1, molecula%nb_atoms
-
-    !     !print '(a2)', molecula%atoms(j)%element
-    ! enddo
-
-    ! do i=1, ligand%nb_atoms
-
-    !     x1 = molecula%atoms(i)%coordinates(1)
-    !     y1 = molecula%atoms(i)%coordinates(2)
-    !     z1 = molecula%atoms(i)%coordinates(3)
-        
-    !     do j=1, molecula%nb_atoms
+            xx = xt * cos(teta)
+            yy = yt * sin(teta)
+            zz = zt
             
-          
-    !         x2 = ligand%atoms(j)%coordinates(1)
-    !         y2 = ligand%atoms(j)%coordinates(2)
-    !         z2 = ligand%atoms(j)%coordinates(3)
 
-    !         d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+            temp%element = ligand%atoms(j)%element
+            temp%coordinates(1) = xx
+            temp%coordinates(2) = yy
+            temp%coordinates(3) = zz
 
-    !         print '(f9.5)', d
-    !         !print '(i4, i4)', i, j
-    !     enddo
-    ! enddo
+
+            allocate(ligand_random(i)%atoms(ligand%nb_atoms), stat=ok)
+            
+            ligand_random(i)%atoms(j) = temp
+
+            teta = teta + 1
+
+
+        enddo
+    enddo
+    do i=1, nbligandrandom
+        do j = 1, ligand%nb_atoms
+            print '(f9.5)', ligand_random(i)%atoms(j)%coordinates(1)
+            print '(f9.5)', ligand_random(i)%atoms(j)%coordinates(2)
+            print '(f9.5)', ligand_random(i)%atoms(j)%coordinates(3)
+
+        enddo
+    enddo
+
+
+    do i=1, nbligandrandom
+        deallocate(ligand_random(i)%atoms)  
+    enddo
+
 
 
     deallocate(molecula%atoms)
