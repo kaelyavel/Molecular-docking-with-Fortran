@@ -5,44 +5,46 @@ program main
 
     implicit none
 
+    
+    ! Initialisation of all the variables used
     type(atomvdw) :: atomvd
 
     type(molecule) :: molecula
 
     type(molecule) :: ligand
 
+    type(molecule) :: best_solution
+
+    type(molecule), dimension(100000) :: ligand_random, ligand_no_collision
+
     type(atomvdw) :: readvdw
 
     type(atomvdw), dimension(53) :: vdw_array
 
-    type(molecule), dimension(10) :: tab_ligand
+    type(molecule), dimension(50) :: tab_ligand
 
-    character(100) :: fileName
+    character(100) :: fileName, fileNameOutput
 
     integer :: i, j, n
 
-    real :: x1, x2, y1, y2, z1, z2, d, r1, r2, volume
 
     logical :: inside = .false.
+    type(atom) :: temp
 
-    !type(atomvdw), dimension(52):: vdw_array
+    integer :: ok, nbligandrandom, a, size_no_collision, vdIndex
 
-    !character(len=2):: na
-    !integer :: i
-    !real :: rad, radinser
+    real :: x1, x2, y1, y2, z1, z2,d,xx, yy, zz, xt, yt, zt,volume, r1,r2, best_volume
 
-    !na = "H "
-    !rad = 2.5
+    real :: deltax, deltay, deltaz
 
-    !call atomvd%init_vdw(na, rad)
+    real :: start_time, end_time, elapsed_time
 
-    !print '(f4.2)',atomvd%radius
-    
-    !call atomvd%read_vdw_file(vdw_array)
+    call cpu_time(start_time)
 
-    !print '(f4.2)', vdw_array(1)%radius
+    a = 1
 
-    !call atomvd%get_atom_radius("H ", vdw_array, radinser)
+    ! Number of Rotation and Translation applied to the original ligand
+    nbligandrandom = 100000
 
 
     call getarg(1,fileName)
@@ -51,48 +53,16 @@ program main
 
     call getarg(2,fileName)
 
-    call ligand%read(fileName)
-
+    call ligand%read(fileName)    
 
     call getarg(3,fileName)
 
     call molecula%read(fileName)
 
-    
     call molecula%set_radius(vdw_array)
     call ligand%set_radius(vdw_array) 
 
-    !print'(f4.2)', molecula%atoms(1)%radius
-
-
-    !call molecula%print_mol2()
-
-    !call ligand%print_mol2()
-
-
-
-    ! x1 = molecula%atoms(1)%coordinates(1)
-    ! y1 = molecula%atoms(1)%coordinates(2)
-    ! z1 = molecula%atoms(1)%coordinates(3)
-  
-    ! x2 = ligand%atoms(1)%coordinates(1)
-    ! y2 = ligand%atoms(1)%coordinates(2)
-    ! z2 = ligand%atoms(1)%coordinates(3)
-
-    !call molecula%atoms(1)%print_atom2()
-    !call ligand%atoms(1)%print_atom2()
-    
-    !d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
-
-    !print '(f9.5)', d
-    ! print '(i4)', ligand%nb_atoms
-    ! print '(i4)', molecula%nb_atoms
-
-    ! do j=1, molecula%nb_atoms
-
-    !     !print '(a2)', molecula%atoms(j)%element
-    ! enddo
-
+    ! Double Loop to verify if the original ligand touches the site
     do i=1, ligand%nb_atoms
 
         x1 = molecula%atoms(i)%coordinates(1)
@@ -106,12 +76,14 @@ program main
             y2 = ligand%atoms(j)%coordinates(2)
             z2 = ligand%atoms(j)%coordinates(3)
 
+            ! Distance between the atoms
             d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
             r1 = molecula%atoms(i)%radius
             r2 = ligand%atoms(j)%radius
 
             if(d <= r1 + r2) then
                 inside = .true.
+                exit
             endif
 
             !print '(f9.5)', d
@@ -125,44 +97,132 @@ program main
         print *,"Le ligand est rejete"
     endif
 
+    vdIndex = 1
 
-    call molecula%box(ligand,volume)
+    ! Creation of the ligands resulting of the rotations and translations
+    do i=1, nbligandrandom
+        do j = 1, ligand%nb_atoms
+            deltax = rand()*35
+            deltay = rand()*35
+            deltaz = rand()*35
+            xt = ligand%atoms(j)%coordinates(1) + deltax
+            yt = ligand%atoms(j)%coordinates(2) + deltay
+            zt = ligand%atoms(j)%coordinates(3) + deltaz
 
-    !print *, volume
 
+
+            xx = xt * cos(rand()*360)
+            yy = yt * sin(rand()*360)
+            zz = zt
+
+
+            temp%element = ligand%atoms(vdIndex)%element
+            temp%coordinates(1) = xx
+            temp%coordinates(2) = yy
+            temp%coordinates(3) = zz
+
+            temp%radius= ligand%atoms(vdIndex)%radius
+
+
+
+            allocate(ligand_random(i)%atoms(ligand%nb_atoms), stat=ok)
+
+            ligand_random(i)%atoms(j) = temp
+
+            vdIndex = vdIndex + 1
+
+            if(vdIndex == ligand%nb_atoms + 1) then
+                vdIndex = 1
+            endif
+
+
+        enddo
+        ligand_random(i)%nb_atoms = ligand%nb_atoms
+    enddo
+
+    
     inside = .false.
-    do n=1, 10
-        do i=1, tab_ligand(n)%nb_atoms
 
-            x1 = molecula%atoms(i)%coordinates(1)
-            y1 = molecula%atoms(i)%coordinates(2)
-            z1 = molecula%atoms(i)%coordinates(3)
+    ! Triple loop to verify if the ligands generated collide with the site
+    do n=1, nbligandrandom
+        inside = .false.
+        do i=1, ligand_random(n)%nb_atoms
+
+            x1 = ligand_random(n)%atoms(i)%coordinates(1)
+            y1 = ligand_random(n)%atoms(i)%coordinates(2)
+            z1 = ligand_random(n)%atoms(i)%coordinates(3)
             
             do j=1, molecula%nb_atoms
                 
               
-                x2 = tab_ligand(n)%atoms(j)%coordinates(1)
-                y2 = tab_ligand(n)%atoms(j)%coordinates(2)
-                z2 = tab_ligand(n)%atoms(j)%coordinates(3)
+                x2 = molecula%atoms(j)%coordinates(1)
+                y2 = molecula%atoms(j)%coordinates(2)
+                z2 = molecula%atoms(j)%coordinates(3)
+
+                
     
                 d = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
-                r1 = molecula%atoms(i)%radius
-                r2 = tab_ligand(n)%atoms(j)%radius
-    
+                r1 = molecula%atoms(j)%radius
+                
+                r2 = ligand_random(n)%atoms(i)%radius
+               
+
+
                 if(d <= r1 + r2) then
                     inside = .true.
+                    exit
                 endif
+                
             enddo
-        enddo
-        if(inside .eqv. .true.) then
-            if(n == 1) then
-                tab_ligand = tab_ligand(2:)
-            else 
-                tab_ligand = [tab_ligand(1:n-1), tab_ligand(n+1:10)]
+
+            if(inside .eqv. .true.)then
+                exit
             endif
+        enddo
+        
+        if(inside .eqv. .false.) then
+            ! If the ligand does not collide we keep it in a new tab that contains lignads that not collide
+            ligand_no_collision(a) = ligand_random(n)
+            a = a + 1
         endif    
     enddo
 
+    size_no_collision = a - 1
+
+    best_solution = ligand_no_collision(1)
+    
+    call molecula%box(ligand_no_collision(1),volume)
+    best_volume = volume
+
+    ! Iterations through the ligand_no_collision tab to extract the best_solution
+    do i=2, size_no_collision
+        call molecula%box(ligand_no_collision(i),volume)
+        if(volume < best_volume) then 
+            best_solution = ligand_no_collision(i)
+            best_volume = volume
+        endif
+    enddo
+
+    !print'(f12.4)', best_volume
+
+    !call best_solution%print_mol2()
+
+
+    fileNameOutput = "best_ligand.xyz"
+    
+    ! Writing of the best ligand into a xyz file
+    call best_solution%write(fileNameOutput)
+
+    call cpu_time(end_time)
+    elapsed_time = end_time - start_time
+
+    print'("Temps ecoule : ", f10.5,"s")',elapsed_time 
+
+    do i=1, nbligandrandom
+        deallocate(ligand_random(i)%atoms)  
+    enddo
+
+    
 
     deallocate(molecula%atoms)
     deallocate(ligand%atoms)
