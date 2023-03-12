@@ -1,5 +1,7 @@
 module vdw_type
-implicit none
+
+
+    implicit none
 
     type atomvdw
         character(len=2), public :: atom_name
@@ -30,19 +32,13 @@ implicit none
             
         end subroutine print_vdw
 
-        subroutine read_vdw_file(atomvdwa,  vdw_atom_arrays)
+        subroutine read_vdw_file(atomvdwa, fileName, vdw_atom_arrays)
             class(atomvdw), intent(in) :: atomvdwa
-            character(80) :: fileName, buffer, line
+            character(80) :: buffer, line
+            character(80), intent(in) :: fileName
             integer :: i, ok
             class(atomvdw), dimension(53), intent(inout) :: vdw_atom_arrays
             
-            if(iargc() /= 1) then
-                print '(a)', "Please provide a VDW file"
-                stop 10
-            end if
-        
-            call getarg(1,fileName)
-            print '(/,a,a)', "File to read = ",trim(fileName)
 
             open(unit=10,file=fileName,iostat=ok,status='old')
     

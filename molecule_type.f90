@@ -7,7 +7,7 @@ module molecule_type
         type(atom), dimension(:), allocatable, public :: atoms
         integer , public :: nb_atoms
     contains
-        procedure :: init_mol, add_atom, box, dist, test_valid, print_mol, write, read, print_mol2
+        procedure :: init_mol, add_atom, box, dist, test_valid, print_mol, write, read, print_mol2, set_radius
 
     
         end type molecule
@@ -145,17 +145,23 @@ module molecule_type
             enddo 
         end subroutine
     
-        subroutine read(m, filename)
+        subroutine read(m, fileName)
             class(molecule), intent(inout) :: m
-            character(len=100), intent(in) :: fileName
+            character(len=100), intent(in) :: filename
+            
             character(len=100):: ligne
             character(len=3) :: element
-            integer :: i, nb_atoms, ok
-            type(atom) :: a
+            integer :: i, nb_atoms, ok, ok2
+            
             real, dimension(3) :: coord
+
            
-            print '(/,a,a)', "File to read = ",trim(fileName)
+            print '(/,a,a)', "File to read = ", trim(fileName)
+            
+            
             open(unit=10,file=fileName,iostat=ok,status='old')
+    
+
             if(ok/=0) then
              print '(a,4x,a)', "Error during opening", fileName
              stop 20
@@ -180,10 +186,41 @@ module molecule_type
                 read(ligne(41:50), '(f9.5)') coord(3)
                 m%atoms(i)%element = element
                 m%atoms(i)%coordinates = coord
+                
                 !call a%init_atom(element, coord)
                 !call m%add_atom(a)
             enddo 
         end subroutine
+
+        subroutine set_radius(m, vdw_array)
+            class(molecule), intent(inout) :: m
+            type(atomvdw), dimension(53), intent(in) :: vdw_array
+            character(2) :: buff,buff2
+            integer :: i,j
+
+
+
+            do j=1, m%nb_atoms
+                buff2 = m%atoms(j)%element
+                do i=1, 52
+                    buff = vdw_array(i)%atom_name
+                   
+                    !print '(a2, a2)', vdw_array(i)%atom_name, atom_n
+    
+                    if(buff == buff2) then
+                        !print *, "equal"
+                        m%atoms(j)%radius = vdw_array(i)%radius
+                        exit
+                    endif
+        
+                    
+                enddo
+            enddo
+            
+
+
+
+        end subroutine set_radius
     
         subroutine write(m, filename)
             class(molecule), intent(in) :: m

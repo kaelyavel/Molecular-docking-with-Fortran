@@ -1,8 +1,13 @@
 module atom_type
 
+  use vdw_type
+  implicit none
+
     type atom 
        character(len=2), public :: element
        real, dimension(3), public :: coordinates
+       real, public :: radius
+
      contains
        procedure :: print_atom, init_atom, print_atom2
   
@@ -43,4 +48,7 @@ module atom_type
 
     end subroutine print_atom2
     
+
+  
+
   end module atom_type
