@@ -227,20 +227,20 @@ module molecule_type
     
         subroutine write(m, filename)
             class(molecule), intent(in) :: m
-            character(len=100), intent(in) :: fileName
+            character(100), intent(in) :: fileName
             integer :: i, ok
             type(atom) :: a
             
             ! Open File provided
             print '(/,a,a)', "File to write = ",trim(fileName)
-            open(unit=10,file=fileName,iostat=ok,status='old')
+            open(unit=10,file=fileName,iostat=ok,status='new')
             if(ok/=0) then
              print '(a,4x,a)', "Error during opening", fileName
              stop 20
             end if
     
             ! écrire le nombre d'atomes du ligand
-            write(10, '(i10)', iostat=ok) m%nb_atoms
+            write(10, '(i2)', iostat=ok) m%nb_atoms
     
             ! Ligand fourni en entrée ?
             write(10, '(a)', iostat=ok) "ligand"
@@ -248,7 +248,7 @@ module molecule_type
             ! Read the content
             do i=1, m%nb_atoms
                 a = m%atoms(i)
-                write(10, '(a3,3i8/)', iostat=ok) a%element, a%coordinates(1), a%coordinates(2), a%coordinates(3)
+                write(10, '(a4,3f16.5)', iostat=ok) a%element, a%coordinates(1), a%coordinates(2), a%coordinates(3)
             enddo 
         endsubroutine
     
