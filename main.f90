@@ -7,7 +7,6 @@ program main
 
     
     ! Initialisation of all the variables used
-    type(atomvdw) :: atomvd
 
     type(molecule) :: molecula
 

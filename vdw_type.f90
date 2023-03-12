@@ -4,7 +4,9 @@ module vdw_type
     implicit none
 
     type atomvdw
+        !atom name from Van der Waals file
         character(len=2), public :: atom_name
+        !atom radius from Van der Waals
         real, public :: radius
             
         contains
@@ -12,7 +14,12 @@ module vdw_type
         
     end type atomvdw 
 
+
+
+
     contains
+
+        !initializes an atom_vdw object 
         subroutine init_vdw(atvdw, name, rad)
 
             class(atomvdw), intent(inout) :: atvdw 
@@ -24,7 +31,10 @@ module vdw_type
     
     
         end subroutine init_vdw
-    
+        
+
+
+        !prints an atom_vdw type
         subroutine print_vdw(atomvdwa)
             class(atomvdw), intent(in) :: atomvdwa
 
@@ -32,6 +42,9 @@ module vdw_type
             
         end subroutine print_vdw
 
+
+
+        !reads a .vdw file and recovers every atom and its radius
         subroutine read_vdw_file(atomvdwa, fileName, vdw_atom_arrays)
             class(atomvdw), intent(in) :: atomvdwa
             character(80) :: buffer, line
@@ -50,10 +63,8 @@ module vdw_type
             ! Skip first 6 lines
             do i=1, 5
                 read(10,'(a80)') line
-                !print '(a)',line
             enddo
 
-            ! Read the content
             do i=1, 53
                 read(10, '(A8)', iostat=ok) buffer
                 if(ok/=0) then
@@ -63,31 +74,28 @@ module vdw_type
                 vdw_atom_arrays(i)%atom_name = buffer(1:2)
                 read(buffer(3:6), '(f4.2)')  vdw_atom_arrays(i)%radius
             enddo
-
-            do i=1, 52
-                !print '(a,x,f4.2)',  vdw_atom_arrays(i)%atom_name, vdw_atom_arrays(i)%radius
-            enddo
             
             
-    
         end subroutine read_vdw_file
 
-        subroutine get_atom_radius(atomvdwa, atom_n, vdw_atom_arrays, actual_radius)
+
+        ! iterates through the 'vdw_atom_arrays' to recover for a given atom name its radius
+        subroutine get_atom_radius(atomvdwa, atom_n, vdw_atom_array, actual_radius)
             class(atomvdw), intent(in) :: atomvdwa
             integer :: i
             real, intent(out) :: actual_radius
             character(2), intent(in) :: atom_n
             character(2) :: buff
-            class(atomvdw), dimension(52), intent(in) :: vdw_atom_arrays
+            class(atomvdw), dimension(52), intent(in) :: vdw_atom_array
            
             
             do i=1, 52
-                buff = vdw_atom_arrays(i)%atom_name
-                print '(a2, a2)', vdw_atom_arrays(i)%atom_name, atom_n
+                buff = vdw_atom_array(i)%atom_name
+                print '(a2, a2)', vdw_atom_array(i)%atom_name, atom_n
 
                 if(buff == atom_n) then
                     print *, "equal"
-                    actual_radius = vdw_atom_arrays(i)%radius
+                    actual_radius = vdw_atom_array(i)%radius
                     exit
                 endif
     
