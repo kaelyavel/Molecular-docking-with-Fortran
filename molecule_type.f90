@@ -32,7 +32,7 @@ module molecule_type
     
 
         ! function that reads an .xyz file defining a molecule
-        
+
         subroutine read(m, fileName)
             class(molecule), intent(inout) :: m
             character(len=100), intent(in) :: filename
@@ -186,7 +186,7 @@ module molecule_type
             type(atom) :: a
             
             ! Open File provided
-            print '(/,a,a)', "File to write = ",trim(fileName)
+            !print '(/,a,a)', "File to write = ",trim(fileName)
             open(unit=10,file=fileName,iostat=ok,status='new')
             if(ok/=0) then
              print '(a,4x,a)', "Error during opening", fileName

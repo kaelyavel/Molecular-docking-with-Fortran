@@ -267,7 +267,8 @@ program main
     do i=1, nbligandrandom
         deallocate(ligand_random(i)%atoms)  
     enddo
-    
+
+    print'("Fichier avec la meilleur strcuture : ", a15)',fileNameOutput
 
     !Deallocation (otherwise crashes are expected)
     
